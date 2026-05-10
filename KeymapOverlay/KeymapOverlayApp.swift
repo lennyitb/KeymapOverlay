@@ -1,32 +1,28 @@
-//
-//  KeymapOverlayApp.swift
-//  KeymapOverlay
-//
-//  Created by Lenny Phelan on 5/10/26.
-//
-
 import SwiftUI
-import SwiftData
 
 @main
 struct KeymapOverlayApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @State private var overlayManager = OverlayManager()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Text("KeymapOverlay is running. Check your menu bar for the keyboard icon.")
+                .padding()
+                .frame(width: 400, height: 100)
         }
-        .modelContainer(sharedModelContainer)
+
+        MenuBarExtra("KO", systemImage: "keyboard") {
+            Button(overlayManager.isVisible ? "Hide Overlay" : "Show Overlay") {
+                overlayManager.toggle()
+            }
+            .keyboardShortcut("k", modifiers: [.command, .shift])
+
+            Divider()
+
+            Button("Quit") {
+                NSApplication.shared.terminate(nil)
+            }
+            .keyboardShortcut("q")
+        }
     }
 }
