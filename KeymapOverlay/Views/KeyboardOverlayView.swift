@@ -9,10 +9,7 @@ struct KeyboardOverlayView: View {
             KeyboardHalfView(half: .right)
         }
         .padding(KeyboardMetrics.overlayPadding)
-        .background {
-            RoundedRectangle(cornerRadius: KeyboardMetrics.overlayCornerRadius)
-                .fill(.ultraThinMaterial)
-        }
+        .glassEffect(.clear, in: RoundedRectangle(cornerRadius: KeyboardMetrics.overlayCornerRadius))
         .onTapGesture {
             onDismiss?()
         }
