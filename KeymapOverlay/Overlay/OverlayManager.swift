@@ -10,6 +10,7 @@ class OverlayManager {
     private let hidMonitor: HIDKeyboardMonitor
     private let keymapManager: KeymapManager
     private var showDelayTask: Task<Void, Never>?
+    private var lastScale: Double = 1.0
 
     init(hidMonitor: HIDKeyboardMonitor, keymapManager: KeymapManager) {
         self.hidMonitor = hidMonitor
@@ -25,8 +26,12 @@ class OverlayManager {
     }
 
     func show() {
-        if panel == nil {
+        let currentScale = AppSettings.shared.overlayScale
+        if panel == nil || currentScale != lastScale {
+            panel?.orderOut(nil)
+            panel = nil
             createPanel()
+            lastScale = currentScale
         }
         positionPanel()
         panel?.orderFrontRegardless()
@@ -75,10 +80,19 @@ class OverlayManager {
             self?.hide()
         })
 
-        let hostingView = NSHostingView(rootView: overlayView)
-        hostingView.setFrameSize(hostingView.fittingSize)
+        let scale = AppSettings.shared.overlayScale
+        let baseSize = NSHostingView(rootView: overlayView).fittingSize
+        let panelSize = NSSize(width: baseSize.width * scale, height: baseSize.height * scale)
 
-        let panel = OverlayPanel(contentRect: NSRect(origin: .zero, size: hostingView.fittingSize))
+        let scaledRoot = overlayView
+            .frame(width: baseSize.width, height: baseSize.height)
+            .scaleEffect(scale)
+            .frame(width: panelSize.width, height: panelSize.height)
+
+        let hostingView = NSHostingView(rootView: scaledRoot)
+        hostingView.setFrameSize(panelSize)
+
+        let panel = OverlayPanel(contentRect: NSRect(origin: .zero, size: panelSize))
         panel.contentView = hostingView
         self.panel = panel
 

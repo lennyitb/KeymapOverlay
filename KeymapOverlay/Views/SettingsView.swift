@@ -3,23 +3,26 @@ import SwiftUI
 struct SettingsView: View {
     @Bindable var settings = AppSettings.shared
     var keymapManager: KeymapManager
+    @State private var showAbout = false
 
     var body: some View {
         Form {
             Section("Keyboard Config") {
-                HStack {
-                    TextField("File path", text: $settings.configFilePath)
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit {
-                            loadConfigFile()
-                        }
+                LabeledContent("File path") {
+                    HStack {
+                        TextField("", text: $settings.configFilePath)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit {
+                                loadConfigFile()
+                            }
 
-                    Button("Browse...") {
-                        let panel = NSOpenPanel()
-                        panel.allowsMultipleSelection = false
-                        if panel.runModal() == .OK, let url = panel.url {
-                            settings.configFilePath = url.path(percentEncoded: false)
-                            loadConfigFile()
+                        Button("Browse...") {
+                            let panel = NSOpenPanel()
+                            panel.allowsMultipleSelection = false
+                            if panel.runModal() == .OK, let url = panel.url {
+                                settings.configFilePath = url.path(percentEncoded: false)
+                                loadConfigFile()
+                            }
                         }
                     }
                 }
@@ -46,11 +49,27 @@ struct SettingsView: View {
                         .monospacedDigit()
                         .frame(width: 32, alignment: .trailing)
                 }
+
+                HStack {
+                    Text("Scale")
+                    Slider(value: $settings.overlayScale, in: 0.5...2.0, step: 0.1)
+                    Text("\(settings.overlayScale, specifier: "%.1f")x")
+                        .monospacedDigit()
+                        .frame(width: 32, alignment: .trailing)
+                }
+            }
+            Section {
+                Button("About KeymapOverlay...") {
+                    showAbout = true
+                }
             }
         }
         .formStyle(.grouped)
-        .frame(width: 420)
+        .frame(width: 580)
         .fixedSize()
+        .sheet(isPresented: $showAbout) {
+            AboutView()
+        }
     }
 
     private func loadConfigFile() {
@@ -58,5 +77,46 @@ struct SettingsView: View {
         guard !path.isEmpty else { return }
         keymapManager.parseAndStore(filePath: path)
         keymapManager.startWatchingFile(path)
+    }
+}
+
+struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
+    private var build: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .frame(width: 64, height: 64)
+
+            Text("KeymapOverlay")
+                .font(.title2.bold())
+
+            Text("Version \(version) (\(build))")
+                .foregroundStyle(.secondary)
+                .font(.callout)
+
+            Text("Made by Lenny Phelan")
+                .font(.callout)
+
+            Text("lenny@lenny.zone")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            Button("OK") {
+                dismiss()
+            }
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(32)
+        .frame(width: 280)
     }
 }

@@ -47,12 +47,7 @@ struct KeymapOverlayApp: App {
     @Environment(\.openSettings) private var openSettings
 
     var body: some Scene {
-        MenuBarExtra("KO", systemImage: "keyboard") {
-            Button(overlayManager.isVisible ? "Hide Overlay" : "Show Overlay") {
-                overlayManager.toggle()
-            }
-            .keyboardShortcut("k", modifiers: [.command, .shift])
-
+        MenuBarExtra("KO", systemImage: "keyboard.badge.eye") {
             Text(hidMonitor.isDeviceConnected ? "Keyboard: Connected" : "Keyboard: Disconnected")
                 .foregroundStyle(hidMonitor.isDeviceConnected ? .primary : .secondary)
 
@@ -60,9 +55,13 @@ struct KeymapOverlayApp: App {
 
             Button("Settings...") {
                 openSettings()
-                NSApplication.shared.activate()
+                DispatchQueue.main.async {
+                    NSApplication.shared.activate()
+                    for window in NSApplication.shared.windows where window.canBecomeKey {
+                        window.makeKeyAndOrderFront(nil)
+                    }
+                }
             }
-            .keyboardShortcut(",")
 
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
