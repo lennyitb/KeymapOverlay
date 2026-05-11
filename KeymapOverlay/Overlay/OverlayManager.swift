@@ -4,15 +4,21 @@ import SwiftUI
 @Observable
 class OverlayManager {
     var isVisible = false
+    private(set) var isManualOverride = false
 
     private var panel: OverlayPanel?
+    private let hidMonitor: HIDKeyboardMonitor
+
+    init(hidMonitor: HIDKeyboardMonitor) {
+        self.hidMonitor = hidMonitor
+        hidMonitor.onStateChange = { [weak self] state in
+            self?.handleHIDStateChange(state)
+        }
+    }
 
     func toggle() {
-        if isVisible {
-            hide()
-        } else {
-            show()
-        }
+        isManualOverride = true
+        if isVisible { hide() } else { show() }
     }
 
     func show() {
@@ -27,6 +33,20 @@ class OverlayManager {
     func hide() {
         panel?.orderOut(nil)
         isVisible = false
+    }
+
+    private func handleHIDStateChange(_ state: KeyboardHIDState) {
+        if !hidMonitor.isDeviceConnected {
+            isManualOverride = false
+        }
+
+        guard !isManualOverride else { return }
+
+        if state.isNonBaseLayerActive {
+            show()
+        } else {
+            hide()
+        }
     }
 
     private func createPanel() {
