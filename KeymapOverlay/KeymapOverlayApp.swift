@@ -11,7 +11,20 @@ struct KeymapOverlayApp: App {
 
     init() {
         let schema = Schema([Keymap.self, Layer.self, LayerBinding.self])
-        let container = try! ModelContainer(for: schema)
+        let config = ModelConfiguration(isStoredInMemoryOnly: false)
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(for: schema, configurations: config)
+        } catch {
+            let url = config.url
+            let parent = url.deletingLastPathComponent()
+            let name = url.lastPathComponent
+            try? FileManager.default
+                .contentsOfDirectory(atPath: parent.path)
+                .filter { $0.hasPrefix(name) }
+                .forEach { try? FileManager.default.removeItem(at: parent.appending(path: $0)) }
+            container = try! ModelContainer(for: schema, configurations: config)
+        }
 
         let monitor = HIDKeyboardMonitor()
         let kmManager = KeymapManager(modelContainer: container)

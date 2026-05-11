@@ -44,10 +44,6 @@ class KeymapManager {
 
         let context = modelContainer.mainContext
         let existing = try? context.fetch(FetchDescriptor<Keymap>())
-        if let current = existing?.first, current.sourceFileHash == hash {
-            parseError = nil
-            return true
-        }
 
         do {
             let parsed = try ZMKKeymapParser.parse(contentsOf: url)
@@ -77,7 +73,8 @@ class KeymapManager {
                         primaryParam: parsedBinding.params.first ?? "",
                         secondaryParam: parsedBinding.params.count > 1 ? parsedBinding.params[1] : nil,
                         displayLabel: display.label,
-                        displaySymbol: display.sfSymbol,
+                        displaySymbols: display.sfSymbols,
+                        isCombo: display.isCombo,
                         keyType: display.type
                     )
                     binding.layer = layer

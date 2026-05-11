@@ -2,12 +2,30 @@ import Foundation
 
 struct KeyDisplay {
     let label: String
-    let sfSymbol: String?
+    let sfSymbols: [String]
     let type: KeyType
+    let isCombo: Bool
+
+    init(label: String, sfSymbol: String?, type: KeyType) {
+        self.label = label
+        self.sfSymbols = sfSymbol.map { [$0] } ?? []
+        self.type = type
+        self.isCombo = false
+    }
+
+    init(label: String, sfSymbols: [String], type: KeyType, isCombo: Bool = false) {
+        self.label = label
+        self.sfSymbols = sfSymbols
+        self.type = type
+        self.isCombo = isCombo
+    }
 }
 
 enum ZMKKeyCodeMap {
     static func resolve(_ keycode: String) -> KeyDisplay {
+        if let combo = parseModifierCombo(keycode) {
+            return combo
+        }
         if let mapped = keycodes[keycode] {
             return mapped
         }
@@ -16,6 +34,75 @@ enum ZMKKeyCodeMap {
         }
         return KeyDisplay(label: keycode, sfSymbol: nil, type: .symbol)
     }
+
+    private static let modifierSymbols: [String: String] = [
+        "LS": "shift", "RS": "shift",
+        "LC": "control", "RC": "control",
+        "LA": "option", "RA": "option",
+        "LG": "command", "RG": "command",
+    ]
+
+    private static func parseModifierCombo(_ keycode: String) -> KeyDisplay? {
+        var remaining = keycode
+        var wrappers: [String] = []
+
+        while let match = remaining.firstMatch(of: /^([LR][SCAG])\((.+)\)$/) {
+            wrappers.append(String(match.1))
+            remaining = String(match.2)
+        }
+
+        guard !wrappers.isEmpty else { return nil }
+
+        // Shift + printable key = just show the shifted character
+        if wrappers.allSatisfy({ $0 == "LS" || $0 == "RS" }),
+           let shifted = shiftedCharacters[remaining] ?? shiftedCharacters[expandAlias(remaining)] {
+            return KeyDisplay(label: shifted, sfSymbol: nil, type: .symbol)
+        }
+
+        let modSymbols = wrappers.compactMap { modifierSymbols[$0] }
+        let inner = resolve(remaining)
+        let allSymbols = modSymbols + inner.sfSymbols
+        return KeyDisplay(label: inner.label, sfSymbols: allSymbols, type: .modifier, isCombo: true)
+    }
+
+    private static let shiftedCharacters: [String: String] = [
+        // Numbers (short and long forms)
+        "N1": "!", "N2": "@", "N3": "#", "N4": "$", "N5": "%",
+        "N6": "^", "N7": "&", "N8": "*", "N9": "(", "N0": ")",
+        "NUMBER_1": "!", "NUMBER_2": "@", "NUMBER_3": "#", "NUMBER_4": "$", "NUMBER_5": "%",
+        "NUMBER_6": "^", "NUMBER_7": "&", "NUMBER_8": "*", "NUMBER_9": "(", "NUMBER_0": ")",
+        // Symbols (short aliases)
+        "MINUS": "_", "EQUAL": "+", "GRAVE": "~",
+        "LBKT": "{", "RBKT": "}", "LBRC": "{", "RBRC": "}",
+        "BSLH": "|", "FSLH": "?", "SEMI": ":", "SQT": "\"",
+        "COMMA": "<", "DOT": ">",
+        "APOS": "\"", "DQT": "\"",
+        "UNDER": "_", "PLUS": "+", "TILDE": "~", "PIPE": "|",
+        "EXCL": "!", "AT": "@", "POUND": "#", "HASH": "#",
+        "DLLR": "$", "PRCNT": "%", "CARET": "^",
+        "AMPS": "&", "ASTRK": "*", "STAR": "*",
+        "LPAR": "(", "RPAR": ")", "QMARK": "?",
+        "LT": "<", "GT": ">",
+        // Symbols (expanded forms)
+        "MINUS_ALIAS": "_", "EQUAL_ALIAS": "+", "GRAVE_ALIAS": "~",
+        "LEFT_BRACKET": "{", "RIGHT_BRACKET": "}",
+        "LEFT_BRACE": "{", "RIGHT_BRACE": "}",
+        "BACKSLASH": "|", "SLASH": "?", "SEMICOLON": ":",
+        "SINGLE_QUOTE": "\"", "DOUBLE_QUOTES": "\"",
+        "COMMA_ALIAS": "<", "PERIOD": ">",
+        "LEFT_PARENTHESIS": "(", "RIGHT_PARENTHESIS": ")",
+        "UNDERSCORE": "_", "PLUS_ALIAS": "+", "TILDE_ALIAS": "~",
+        "PIPE_ALIAS": "|", "CARET_ALIAS": "^",
+        "EXCLAMATION": "!", "AT_SIGN": "@", "DOLLAR": "$",
+        "PERCENT": "%", "AMPERSAND": "&", "ASTERISK": "*",
+        "LESS_THAN": "<", "GREATER_THAN": ">", "QUESTION": "?",
+        // Letters
+        "A": "A", "B": "B", "C": "C", "D": "D", "E": "E", "F": "F",
+        "G": "G", "H": "H", "I": "I", "J": "J", "K": "K", "L": "L",
+        "M": "M", "N": "N", "O": "O", "P": "P", "Q": "Q", "R": "R",
+        "S": "S", "T": "T", "U": "U", "V": "V", "W": "W", "X": "X",
+        "Y": "Y", "Z": "Z",
+    ]
 
     static func resolveBinding(behavior: String, params: [String], layerNames: [Int: String]) -> KeyDisplay {
         switch behavior {
@@ -39,7 +126,7 @@ enum ZMKKeyCodeMap {
         case "sk":
             guard let key = params.first else { return KeyDisplay(label: "?", sfSymbol: nil, type: .modifier) }
             let resolved = resolve(key)
-            return KeyDisplay(label: resolved.label, sfSymbol: resolved.sfSymbol, type: .modifier)
+            return KeyDisplay(label: resolved.label, sfSymbols: resolved.sfSymbols, type: .modifier)
         case "trans":
             return KeyDisplay(label: "▽", sfSymbol: nil, type: .blank)
         case "none":
@@ -171,10 +258,10 @@ enum ZMKKeyCodeMap {
         map["INSERT"] = KeyDisplay(label: "Ins", sfSymbol: nil, type: .modifier)
 
         // Navigation
-        map["LEFT_ARROW"] = KeyDisplay(label: "←", sfSymbol: nil, type: .modifier)
-        map["RIGHT_ARROW"] = KeyDisplay(label: "→", sfSymbol: nil, type: .modifier)
-        map["UP_ARROW"] = KeyDisplay(label: "↑", sfSymbol: nil, type: .modifier)
-        map["DOWN_ARROW"] = KeyDisplay(label: "↓", sfSymbol: nil, type: .modifier)
+        map["LEFT_ARROW"] = KeyDisplay(label: "←", sfSymbol: "arrow.left", type: .modifier)
+        map["RIGHT_ARROW"] = KeyDisplay(label: "→", sfSymbol: "arrow.right", type: .modifier)
+        map["UP_ARROW"] = KeyDisplay(label: "↑", sfSymbol: "arrow.up", type: .modifier)
+        map["DOWN_ARROW"] = KeyDisplay(label: "↓", sfSymbol: "arrow.down", type: .modifier)
         map["HOME"] = KeyDisplay(label: "Home", sfSymbol: nil, type: .modifier)
         map["END"] = KeyDisplay(label: "End", sfSymbol: nil, type: .modifier)
         map["PAGE_UP"] = KeyDisplay(label: "PgUp", sfSymbol: nil, type: .modifier)

@@ -41,18 +41,20 @@ final class LayerBinding {
     var primaryParam: String
     var secondaryParam: String?
     var displayLabel: String
-    var displaySymbol: String?
+    var displaySymbols: [String]
+    var isCombo: Bool
     var keyType: KeyType
     var layer: Layer?
 
     init(position: Int, behaviorName: String, primaryParam: String, secondaryParam: String? = nil,
-         displayLabel: String, displaySymbol: String? = nil, keyType: KeyType) {
+         displayLabel: String, displaySymbols: [String] = [], isCombo: Bool = false, keyType: KeyType) {
         self.position = position
         self.behaviorName = behaviorName
         self.primaryParam = primaryParam
         self.secondaryParam = secondaryParam
         self.displayLabel = displayLabel
-        self.displaySymbol = displaySymbol
+        self.displaySymbols = displaySymbols
+        self.isCombo = isCombo
         self.keyType = keyType
     }
 }

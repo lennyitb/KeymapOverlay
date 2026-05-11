@@ -78,9 +78,10 @@ enum CorneLayout {
                 return KeyDefinition(
                     row: phys.row, col: phys.col, half: phys.half,
                     label: binding.displayLabel,
-                    sfSymbol: binding.displaySymbol,
+                    sfSymbols: binding.displaySymbols,
                     type: binding.keyType,
-                    widthMultiplier: phys.widthMultiplier
+                    widthMultiplier: phys.widthMultiplier,
+                    isCombo: binding.isCombo
                 )
             }
             return KeyDefinition(
