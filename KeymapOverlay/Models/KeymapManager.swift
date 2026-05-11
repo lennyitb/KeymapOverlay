@@ -67,13 +67,15 @@ class KeymapManager {
                         params: parsedBinding.params,
                         layerNames: layerNameMap
                     )
+                    let finalLabel = parsedBinding.annotation?.label ?? display.label
+                    let finalSymbols = parsedBinding.annotation?.icons ?? display.sfSymbols
                     let binding = LayerBinding(
                         position: position,
                         behaviorName: parsedBinding.behavior,
                         primaryParam: parsedBinding.params.first ?? "",
                         secondaryParam: parsedBinding.params.count > 1 ? parsedBinding.params[1] : nil,
-                        displayLabel: display.label,
-                        displaySymbols: display.sfSymbols,
+                        displayLabel: finalLabel,
+                        displaySymbols: finalSymbols,
                         isCombo: display.isCombo,
                         keyType: display.type
                     )

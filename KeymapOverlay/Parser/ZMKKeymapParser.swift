@@ -1,9 +1,15 @@
 import Foundation
 import CryptoKit
 
+struct KeyAnnotation {
+    let icons: [String]?
+    let label: String?
+}
+
 struct ParsedBinding {
     let behavior: String
     let params: [String]
+    var annotation: KeyAnnotation?
 }
 
 struct ParsedLayer {
@@ -92,6 +98,10 @@ enum ZMKKeymapParser {
                 }
             } else if remaining.hasPrefix("/*") {
                 if let end = remaining.range(of: "*/") {
+                    let commentBody = source[source.index(i, offsetBy: 2)..<end.lowerBound]
+                    if commentBody.trimmingCharacters(in: .whitespaces).hasPrefix("@key") {
+                        result.append(contentsOf: source[i..<end.upperBound])
+                    }
                     i = end.upperBound
                 } else {
                     break
@@ -209,11 +219,49 @@ enum ZMKKeymapParser {
             .filter { !$0.isEmpty }
 
         return parts.map { part in
-            let tokens = part.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+            let (cleaned, annotation) = extractAnnotation(from: part)
+            let tokens = cleaned.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
             let behavior = tokens[0]
             let params = tokens.dropFirst().map { substitute($0, defines: defines) }
-            return ParsedBinding(behavior: behavior, params: params)
+            return ParsedBinding(behavior: behavior, params: params, annotation: annotation)
         }
+    }
+
+    private static func extractAnnotation(from part: String) -> (String, KeyAnnotation?) {
+        guard let start = part.range(of: "/* @key"),
+              let end = part.range(of: "*/", range: start.upperBound..<part.endIndex) else {
+            return (part, nil)
+        }
+
+        let fields = part[start.upperBound..<end.lowerBound]
+            .trimmingCharacters(in: .whitespaces)
+        let annotation = parseAnnotationFields(fields)
+        let cleaned = part[part.startIndex..<start.lowerBound]
+            .trimmingCharacters(in: .whitespaces)
+        return (cleaned, annotation)
+    }
+
+    private static func parseAnnotationFields(_ fields: String) -> KeyAnnotation? {
+        guard !fields.isEmpty else { return nil }
+
+        var icons: [String]?
+        var label: String?
+
+        if let labelRange = fields.range(of: "label:") {
+            label = String(fields[labelRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            let beforeLabel = fields[fields.startIndex..<labelRange.lowerBound]
+                .trimmingCharacters(in: .whitespaces)
+            if let iconRange = beforeLabel.range(of: "icon:") {
+                let iconStr = String(beforeLabel[iconRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+                icons = iconStr.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+            }
+        } else if let iconRange = fields.range(of: "icon:") {
+            let iconStr = String(fields[iconRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            icons = iconStr.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+        }
+
+        guard icons != nil || label != nil else { return nil }
+        return KeyAnnotation(icons: icons, label: label)
     }
 
     private static func substitute(_ token: String, defines: [String: String]) -> String {
