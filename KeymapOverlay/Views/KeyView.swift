@@ -11,14 +11,29 @@ enum KeyboardMetrics {
 }
 
 struct KeyView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let key: KeyDefinition
+
+    private var fillWhite: Double {
+        let light = key.isHeld ? 0.68 : key.type == .mouse ? 0.78 : 0.92
+        let dark = key.isHeld ? 0.38 : key.type == .mouse ? 0.28 : 0.18
+        return colorScheme == .dark ? dark : light
+    }
+
+    private var borderWhite: Double {
+        let light = key.isHeld ? 0.48 : key.type == .mouse ? 0.58 : 0.72
+        let dark = key.isHeld ? 0.55 : key.type == .mouse ? 0.45 : 0.35
+        return colorScheme == .dark ? dark : light
+    }
 
     var body: some View {
         ZStack {
+            if key.type != .blank || key.isHeld {
+                RoundedRectangle(cornerRadius: KeyboardMetrics.cornerRadius)
+                    .fill(Color(white: fillWhite))
+            }
             RoundedRectangle(cornerRadius: KeyboardMetrics.cornerRadius)
-                .fill(Color(white: 0.92))
-            RoundedRectangle(cornerRadius: KeyboardMetrics.cornerRadius)
-                .strokeBorder(Color(white: 0.72), lineWidth: KeyboardMetrics.borderWidth)
+                .strokeBorder(Color(white: borderWhite), lineWidth: KeyboardMetrics.borderWidth)
 
             keyContent
         }
@@ -43,10 +58,14 @@ struct KeyView: View {
             Text(key.label)
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
+        case .mouse:
+            if !key.sfSymbols.isEmpty {
+                symbolWithCaption
+            } else {
+                plainLabel
+            }
         case .blank:
-            Text(key.label)
-                .font(.system(size: 11))
-                .foregroundStyle(.quaternary)
+            EmptyView()
         default:
             if !key.sfSymbols.isEmpty {
                 symbolWithCaption
@@ -89,8 +108,10 @@ struct KeyView: View {
                         .font(.system(size: 11))
                 }
             }
-            Text(key.label)
-                .font(.system(size: 8))
+            if !key.label.isEmpty {
+                Text(key.label)
+                    .font(.system(size: 8))
+            }
             Spacer().frame(height: 4)
         }
         .padding(.leading, 5)
@@ -120,6 +141,14 @@ struct KeyView: View {
                 sfSymbols: ["command", "shift", "arrow.right"], type: .modifier, isCombo: true))
             KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "Bksp", sfSymbol: "delete.left", type: .modifier))
             KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "▽", type: .blank))
+        }
+        HStack(spacing: KeyboardMetrics.keySpacing) {
+            KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "",
+                sfSymbols: ["pointer.arrow", "arrow.up"], type: .mouse))
+            KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "",
+                sfSymbols: ["scroll", "arrow.up"], type: .mouse))
+            KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "LClick", sfSymbol: "pointer.arrow.click.2", type: .mouse))
+            KeyView(key: KeyDefinition(row: 0, col: 0, half: .left, label: "MClick", sfSymbol: "pointer.arrow.click", type: .mouse))
         }
     }
     .padding()

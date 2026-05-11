@@ -10,6 +10,7 @@ enum KeyType: String, Codable {
     case symbol
     case layer
     case blank
+    case mouse
 }
 
 struct KeyDefinition: Identifiable {
@@ -22,9 +23,10 @@ struct KeyDefinition: Identifiable {
     let type: KeyType
     let widthMultiplier: CGFloat
     let isCombo: Bool
+    let isHeld: Bool
 
     init(row: Int, col: Int, half: KeyHalf, label: String, sfSymbol: String? = nil, sfSymbols: [String]? = nil,
-         type: KeyType = .letter, widthMultiplier: CGFloat = 1.0, isCombo: Bool = false) {
+         type: KeyType = .letter, widthMultiplier: CGFloat = 1.0, isCombo: Bool = false, isHeld: Bool = false) {
         self.row = row
         self.col = col
         self.half = half
@@ -39,5 +41,6 @@ struct KeyDefinition: Identifiable {
         self.type = type
         self.widthMultiplier = widthMultiplier
         self.isCombo = isCombo
+        self.isHeld = isHeld
     }
 }

@@ -138,7 +138,21 @@ enum ZMKKeyCodeMap {
             return KeyDisplay(label: "CW", sfSymbol: "textformat.abc", type: .modifier)
         case "key_repeat":
             return KeyDisplay(label: "Rep", sfSymbol: "repeat", type: .modifier)
+        case "mmv":
+            guard let key = params.first else { return KeyDisplay(label: "Move", sfSymbol: "pointer.arrow", type: .mouse) }
+            return resolve(key)
+        case "msc", "mwh":
+            guard let key = params.first else { return KeyDisplay(label: "Scroll", sfSymbol: "scroll", type: .mouse) }
+            return resolve(key)
+        case "mkp":
+            guard let key = params.first else { return KeyDisplay(label: "Click", sfSymbol: "pointer.arrow", type: .mouse) }
+            return resolve(key)
         default:
+            if behavior.hasPrefix("sk") {
+                guard let key = params.first else { return KeyDisplay(label: "?", sfSymbol: nil, type: .modifier) }
+                let resolved = resolve(key)
+                return KeyDisplay(label: resolved.label, sfSymbols: resolved.sfSymbols, type: .modifier)
+            }
             let label = params.first.map { "\(behavior) \($0)" } ?? behavior
             return KeyDisplay(label: label, sfSymbol: nil, type: .modifier)
         }
@@ -221,6 +235,10 @@ enum ZMKKeyCodeMap {
         "C_VOL_UP": "C_VOLUME_UP", "C_VOL_DN": "C_VOLUME_DOWN",
         "C_BRI_UP": "C_BRIGHTNESS_INC", "C_BRI_DN": "C_BRIGHTNESS_DEC",
         "C_NEXT": "C_NEXT_ALIAS", "C_PREV": "C_PREVIOUS",
+        // Mouse
+        "MOVE_U": "MOVE_UP", "MOVE_D": "MOVE_DOWN", "MOVE_L": "MOVE_LEFT", "MOVE_R": "MOVE_RIGHT",
+        "SCROLL_UP": "SCRL_UP", "SCROLL_DOWN": "SCRL_DOWN", "SCROLL_LEFT": "SCRL_LEFT", "SCROLL_RIGHT": "SCRL_RIGHT",
+        "MB1": "LCLK", "MB2": "RCLK", "MB3": "MCLK",
     ]
 
     private static let keycodes: [String: KeyDisplay] = {
@@ -258,10 +276,10 @@ enum ZMKKeyCodeMap {
         map["INSERT"] = KeyDisplay(label: "Ins", sfSymbol: nil, type: .modifier)
 
         // Navigation
-        map["LEFT_ARROW"] = KeyDisplay(label: "←", sfSymbol: "arrow.left", type: .modifier)
-        map["RIGHT_ARROW"] = KeyDisplay(label: "→", sfSymbol: "arrow.right", type: .modifier)
-        map["UP_ARROW"] = KeyDisplay(label: "↑", sfSymbol: "arrow.up", type: .modifier)
-        map["DOWN_ARROW"] = KeyDisplay(label: "↓", sfSymbol: "arrow.down", type: .modifier)
+        map["LEFT_ARROW"] = KeyDisplay(label: "", sfSymbol: "arrow.left", type: .modifier)
+        map["RIGHT_ARROW"] = KeyDisplay(label: "", sfSymbol: "arrow.right", type: .modifier)
+        map["UP_ARROW"] = KeyDisplay(label: "", sfSymbol: "arrow.up", type: .modifier)
+        map["DOWN_ARROW"] = KeyDisplay(label: "", sfSymbol: "arrow.down", type: .modifier)
         map["HOME"] = KeyDisplay(label: "Home", sfSymbol: nil, type: .modifier)
         map["END"] = KeyDisplay(label: "End", sfSymbol: nil, type: .modifier)
         map["PAGE_UP"] = KeyDisplay(label: "PgUp", sfSymbol: nil, type: .modifier)
@@ -340,6 +358,25 @@ enum ZMKKeyCodeMap {
         // Application
         map["K_APPLICATION"] = KeyDisplay(label: "Menu", sfSymbol: nil, type: .modifier)
         map["K_APP"] = KeyDisplay(label: "Menu", sfSymbol: nil, type: .modifier)
+
+        // Mouse movement
+        map["MOVE_UP"] = KeyDisplay(label: "", sfSymbols: ["pointer.arrow", "arrow.up"], type: .mouse)
+        map["MOVE_DOWN"] = KeyDisplay(label: "", sfSymbols: ["pointer.arrow", "arrow.down"], type: .mouse)
+        map["MOVE_LEFT"] = KeyDisplay(label: "", sfSymbols: ["pointer.arrow", "arrow.left"], type: .mouse)
+        map["MOVE_RIGHT"] = KeyDisplay(label: "", sfSymbols: ["pointer.arrow", "arrow.right"], type: .mouse)
+
+        // Mouse scroll
+        map["SCRL_UP"] = KeyDisplay(label: "", sfSymbols: ["scroll", "arrow.up"], type: .mouse)
+        map["SCRL_DOWN"] = KeyDisplay(label: "", sfSymbols: ["scroll", "arrow.down"], type: .mouse)
+        map["SCRL_LEFT"] = KeyDisplay(label: "", sfSymbols: ["scroll", "arrow.left"], type: .mouse)
+        map["SCRL_RIGHT"] = KeyDisplay(label: "", sfSymbols: ["scroll", "arrow.right"], type: .mouse)
+
+        // Mouse buttons
+        map["LCLK"] = KeyDisplay(label: "LClick", sfSymbol: "pointer.arrow.click.2", type: .mouse)
+        map["RCLK"] = KeyDisplay(label: "RClick", sfSymbol: "pointer.arrow.click", type: .mouse)
+        map["MCLK"] = KeyDisplay(label: "MClick", sfSymbol: "pointer.arrow.click", type: .mouse)
+        map["MB4"] = KeyDisplay(label: "MB4", sfSymbol: "pointer.arrow", type: .mouse)
+        map["MB5"] = KeyDisplay(label: "MB5", sfSymbol: "pointer.arrow", type: .mouse)
 
         return map
     }()

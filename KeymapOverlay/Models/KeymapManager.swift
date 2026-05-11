@@ -117,24 +117,19 @@ class KeymapManager {
         }
 
         let targetIndex = min(activeLayerIndex, storedLayers.count - 1)
-        let resolvedBindings = resolveTransparentKeys(layerIndex: targetIndex)
-        currentKeys = CorneLayout.keyDefinitions(from: resolvedBindings)
-    }
-
-    private func resolveTransparentKeys(layerIndex: Int) -> [LayerBinding] {
-        let bindings = storedLayers[layerIndex]
-        return bindings.map { binding in
-            if binding.behaviorName == "trans" {
-                for fallbackIdx in stride(from: layerIndex - 1, through: 0, by: -1) {
-                    let fallback = storedLayers[fallbackIdx]
-                    if let fb = fallback.first(where: { $0.position == binding.position }),
-                       fb.behaviorName != "trans" {
-                        return fb
+        var heldBindings: [Int: LayerBinding] = [:]
+        if targetIndex > 0 {
+            for layerIdx in 0..<targetIndex {
+                for binding in storedLayers[layerIdx] {
+                    let isLayerSwitch = (binding.behaviorName == "mo" || binding.behaviorName == "lt")
+                        && binding.primaryParam == String(targetIndex)
+                    if isLayerSwitch {
+                        heldBindings[binding.position] = binding
                     }
                 }
             }
-            return binding
         }
+        currentKeys = CorneLayout.keyDefinitions(from: storedLayers[targetIndex], heldBindings: heldBindings)
     }
 
     // MARK: - File watching

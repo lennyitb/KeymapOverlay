@@ -71,9 +71,19 @@ enum CorneLayout {
         CornePhysicalKey(41, row: 3, col: 2, half: .right),
     ]
 
-    static func keyDefinitions(from bindings: [LayerBinding]) -> [KeyDefinition] {
+    static func keyDefinitions(from bindings: [LayerBinding], heldBindings: [Int: LayerBinding] = [:]) -> [KeyDefinition] {
         let bindingsByPosition = Dictionary(uniqueKeysWithValues: bindings.map { ($0.position, $0) })
         return physicalKeys.map { phys in
+            if let held = heldBindings[phys.position] {
+                return KeyDefinition(
+                    row: phys.row, col: phys.col, half: phys.half,
+                    label: held.displayLabel,
+                    sfSymbols: held.displaySymbols,
+                    type: held.keyType,
+                    widthMultiplier: phys.widthMultiplier,
+                    isHeld: true
+                )
+            }
             if let binding = bindingsByPosition[phys.position] {
                 return KeyDefinition(
                     row: phys.row, col: phys.col, half: phys.half,
