@@ -81,14 +81,43 @@ class OverlayManager {
         let panel = OverlayPanel(contentRect: NSRect(origin: .zero, size: hostingView.fittingSize))
         panel.contentView = hostingView
         self.panel = panel
+
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: panel,
+            queue: .main
+        ) { [weak self] _ in
+            self?.savePosition()
+        }
     }
 
     private func positionPanel() {
         guard let panel, let screen = NSScreen.main else { return }
-        let screenFrame = screen.visibleFrame
         let panelSize = panel.frame.size
+
+        if let saved = UserDefaults.standard.string(forKey: "overlayPosition") {
+            let components = saved.split(separator: ",")
+            if components.count == 2,
+               let x = Double(components[0]),
+               let y = Double(components[1]) {
+                let origin = NSPoint(x: x, y: y)
+                let frame = NSRect(origin: origin, size: panelSize)
+                if screen.visibleFrame.intersects(frame) {
+                    panel.setFrameOrigin(origin)
+                    return
+                }
+            }
+        }
+
+        let screenFrame = screen.visibleFrame
         let x = screenFrame.midX - panelSize.width / 2
         let y = screenFrame.midY - panelSize.height / 2
         panel.setFrameOrigin(NSPoint(x: x, y: y))
+    }
+
+    private func savePosition() {
+        guard let panel else { return }
+        let origin = panel.frame.origin
+        UserDefaults.standard.set("\(origin.x),\(origin.y)", forKey: "overlayPosition")
     }
 }

@@ -17,6 +17,7 @@ class OverlayPanel: NSPanel {
         level = .floating
         hasShadow = false
         ignoresMouseEvents = false
+        isMovableByWindowBackground = true
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         isReleasedWhenClosed = false
     }
