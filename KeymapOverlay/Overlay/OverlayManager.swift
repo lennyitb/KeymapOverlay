@@ -8,9 +8,12 @@ class OverlayManager {
 
     private var panel: OverlayPanel?
     private let hidMonitor: HIDKeyboardMonitor
+    private let keymapManager: KeymapManager
+    private var showDelayTask: Task<Void, Never>?
 
-    init(hidMonitor: HIDKeyboardMonitor) {
+    init(hidMonitor: HIDKeyboardMonitor, keymapManager: KeymapManager) {
         self.hidMonitor = hidMonitor
+        self.keymapManager = keymapManager
         hidMonitor.onStateChange = { [weak self] state in
             self?.handleHIDStateChange(state)
         }
@@ -40,17 +43,35 @@ class OverlayManager {
             isManualOverride = false
         }
 
+        keymapManager.setActiveLayer(from: state)
+
         guard !isManualOverride else { return }
 
         if state.isNonBaseLayerActive {
-            show()
+            showWithDelay()
         } else {
+            showDelayTask?.cancel()
+            showDelayTask = nil
             hide()
         }
     }
 
+    private func showWithDelay() {
+        showDelayTask?.cancel()
+        let delay = AppSettings.shared.showDelaySeconds
+        if delay <= 0 {
+            show()
+            return
+        }
+        showDelayTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else { return }
+            show()
+        }
+    }
+
     private func createPanel() {
-        let overlayView = KeyboardOverlayView(onDismiss: { [weak self] in
+        let overlayView = KeyboardOverlayView(keymapManager: keymapManager, onDismiss: { [weak self] in
             self?.hide()
         })
 

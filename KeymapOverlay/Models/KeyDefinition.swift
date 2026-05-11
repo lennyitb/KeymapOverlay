@@ -4,7 +4,7 @@ enum KeyHalf {
     case left, right
 }
 
-enum KeyType {
+enum KeyType: String, Codable {
     case letter
     case modifier
     case symbol
