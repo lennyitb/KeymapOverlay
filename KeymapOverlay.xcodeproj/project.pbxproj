@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B86B48F22FC2000000C1B113 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B86B48F12FC2000000C1B113 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B86B483A2FB127FC00C1B113 /* KeymapOverlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeymapOverlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B86B48F22FC2000000C1B113 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = KeymapOverlay;
 			packageProductDependencies = (
+				B86B48F12FC2000000C1B113 /* Sparkle */,
 			);
 			productName = KeymapOverlay;
 			productReference = B86B483A2FB127FC00C1B113 /* KeymapOverlay.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = B86B48312FB127FC00C1B113;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B86B48F02FC2000000C1B113 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B86B483B2FB127FC00C1B113 /* Products */;
 			projectDirPath = "";
@@ -259,6 +268,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KeymapOverlay/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "KeymapOverlay reads HID reports from your BLE keyboard to show the overlay when you activate a layer.";
@@ -296,6 +306,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KeymapOverlay/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "KeymapOverlay reads HID reports from your BLE keyboard to show the overlay when you activate a layer.";
@@ -339,6 +350,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B86B48F02FC2000000C1B113 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B86B48F12FC2000000C1B113 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B86B48F02FC2000000C1B113 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B86B48322FB127FC00C1B113 /* Project object */;
 }

@@ -6,6 +6,7 @@ struct KeymapOverlayApp: App {
     @State private var hidMonitor: HIDKeyboardMonitor
     @State private var overlayManager: OverlayManager
     @State private var keymapManager: KeymapManager
+    private let updaterManager = UpdaterManager()
 
     let modelContainer: ModelContainer
 
@@ -45,6 +46,9 @@ struct KeymapOverlayApp: App {
     }
 
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
+    @State private var needsWelcome = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        && !UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
 
     var body: some Scene {
         MenuBarExtra("KO", systemImage: "keyboard.badge.eye") {
@@ -52,6 +56,10 @@ struct KeymapOverlayApp: App {
                 .foregroundStyle(hidMonitor.isDeviceConnected ? .primary : .secondary)
 
             Divider()
+
+            Button("Check for Updates...") {
+                updaterManager.checkForUpdates()
+            }
 
             Button("Settings...") {
                 openSettings()
@@ -70,7 +78,17 @@ struct KeymapOverlayApp: App {
         }
 
         Settings {
-            SettingsView(keymapManager: keymapManager)
+            SettingsView(keymapManager: keymapManager, updaterManager: updaterManager)
         }
+
+        Window("Welcome to KeymapOverlay", id: "welcome") {
+            WelcomeView(keymapManager: keymapManager)
+                .task {
+                    NSApplication.shared.activate()
+                }
+        }
+        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
+        .defaultLaunchBehavior(needsWelcome ? .presented : .suppressed)
     }
 }

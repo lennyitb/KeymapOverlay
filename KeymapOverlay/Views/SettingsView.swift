@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Bindable var settings = AppSettings.shared
     var keymapManager: KeymapManager
+    var updaterManager: UpdaterManager
     @State private var showAbout = false
 
     var body: some View {
@@ -60,6 +61,13 @@ struct SettingsView: View {
             }
             Section("General") {
                 Toggle("Open at Login", isOn: $settings.openAtLogin)
+                Toggle("Automatically check for updates", isOn: Binding(
+                    get: { updaterManager.automaticallyChecksForUpdates },
+                    set: { updaterManager.automaticallyChecksForUpdates = $0 }
+                ))
+                Button("Check for Updates...") {
+                    updaterManager.checkForUpdates()
+                }
             }
 
             Section {

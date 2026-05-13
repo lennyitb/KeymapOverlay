@@ -20,6 +20,12 @@ xcuserdata/
 # AI temp files
 ~ai-*.tmp
 
+# Design assets
+*.ai
+
+# Build artifacts
+*.app
+
 # Secrets / credentials
 *.pem
 *.key
