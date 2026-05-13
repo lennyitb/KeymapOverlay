@@ -58,6 +58,10 @@ struct SettingsView: View {
                         .frame(width: 32, alignment: .trailing)
                 }
             }
+            Section("General") {
+                Toggle("Open at Login", isOn: $settings.openAtLogin)
+            }
+
             Section {
                 Button("About KeymapOverlay...") {
                     showAbout = true
