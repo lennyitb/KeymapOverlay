@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>KeymapOverlay Changelog</title>
+        <language>en</language>
+        <item>
+            <title>Version 1.0.0</title>
+            <pubDate>Tue, 12 May 2026 23:19:56 -0400</pubDate>
+            <sparkle:version>1.0.0</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure
+                url="https://github.com/lennyitb/KeymapOverlay/releases/download/v1.0.0/KeymapOverlay.zip"
+                length="1526460"
+                type="application/octet-stream"
+                sparkle:edSignature="6CEMUZgmBWOK0HX3NpGdeZgNbcxP4dxQXb2fEWP7aCRMd6ffAA6yz8PmdzZ0oU5hnydC8Z0vIz5tcCV8OgFlAw=="
+            />
+        </item>
+    </channel>
+</rss>
